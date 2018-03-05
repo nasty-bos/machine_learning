@@ -1,6 +1,5 @@
-import pandas
 import numpy
-import code.data as cd
+from scipy import linalg
 
 
 #######################################################################
@@ -9,7 +8,7 @@ def linear_regression(X, y, intercept=None):
     return {'done': False}
 
 #######################################################################
-def ridge_cross_validation(X, y, lambdaParam, intercept=None):
+def ridge_regression(X, y, lambdaParam, intercept=None):
     '''
     computes the analytical solution to the ridge regression problem
 
@@ -23,4 +22,4 @@ def ridge_cross_validation(X, y, lambdaParam, intercept=None):
     '''
 
     n, m = X.shape
-    return numpy.linalg.inv(X.T.dot(X) + lambdaParam * numpy.eye(m)).dot(X.T.dot(y))
+    return linalg.inv(X.T.dot(X) + lambdaParam * numpy.eye(m)).dot(X.T.dot(y))
