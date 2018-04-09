@@ -10,7 +10,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import code.data as cd
+import data as cd
 from sklearn import datasets, metrics
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.linear_model import LinearRegression
@@ -36,7 +36,7 @@ print(np.sqrt(metrics.mean_squared_error(testSet.loc[:, xColumns].mean(axis=1), 
 
 # write to pandas Series object 
 yPred = pd.DataFrame(y_pred, index=testSet.index, columns=['y'])
-yPred.to_csv(os.path.join(cd.data_dir(), cd.DataSets.EX0.value, 'output .csv'))
+yPred.to_csv(os.path.join(cd.data_dir(), cd.DataSets.EX0.value, 'output.csv'))
 
 
 # check 
