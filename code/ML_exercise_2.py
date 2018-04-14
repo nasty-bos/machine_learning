@@ -43,7 +43,7 @@ scaledTestSet = scaler.transform(testSet.loc[:, xColumns])
 #y_pred=prcptrn.predict(scaledTestSet)
 #print(y_pred)
 from sklearn.neural_network import MLPClassifier
-mlpclass = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5), random_state=1, max_iter=1e3)
+mlpclass = MLPClassifier(solver='lbfgs', hidden_layer_sizes=(5), alpha=1e-5, random_state=1, max_iter=1e3)
 
 # grid-search for optimum paramters 
 paramters = {'alpha': 10.0 ** -np.arange(1, 7, 0.1)}
@@ -55,17 +55,17 @@ mlpclass.fit(scaledTrainSet, trainSet.loc[:, yColumns].as_matrix().flatten())
 optMPL.fit(scaledTrainSet, trainSet.loc[:, yColumns].as_matrix().flatten())
 
 # prediction in-sample
-y_in_sample = mlpclass.predict(scaledTrainSet)
-yOpt_in_sample = optMPL.predict(scaledTrainSet)
+#y_in_sample = mlpclass.predict(scaledTrainSet)
+#yOpt_in_sample = optMPL.predict(scaledTrainSet)
 
 # classification statistics
-dim = len(yOpt_in_sample)
-inSampleConfusionMatrix = confusion_matrix(trainSet.loc[:, yColumns], yOpt_in_sample)
-accuracy = np.sum(np.diag(inSampleConfusionMatrix)) / dim
-print("Using optimal parameter alpha, model accuracy %.4f " %accuracy)
+#dim = len(yOpt_in_sample)
+#inSampleConfusionMatrix = confusion_matrix(trainSet.loc[:, yColumns], yOpt_in_sample)
+#accuracy = np.sum(np.diag(inSampleConfusionMatrix)) / dim
+#print("Using optimal parameter alpha, model accuracy %.4f " %accuracy)
 
 # prediction
-y_pred = mlpclass.predict(scaledTestSet)
+y_pred = optMPL.predict(scaledTestSet)
 
 # write to pandas Series object 
 yPred = pd.DataFrame(y_pred, index=testSet.index, columns=['y'])
