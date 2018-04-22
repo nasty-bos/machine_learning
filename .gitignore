@@ -1,1 +1,6 @@
 .DS_Store
+.idea/vcs.xml
+.idea/machine_learning.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
