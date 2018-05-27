@@ -6,6 +6,8 @@ import data as cd
 import data as dt
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+
 import logging 
 
 import tensorflow as tf
@@ -82,10 +84,6 @@ def insample_learn():
 	RM = np.random.RandomState(12357)
 	train_labeled.index = RM.permutation(train_labeled.index)
 	
-	RM = np.random.RandomState(12357)
-	train_unlabeled.index = RM.permutation(train_unlabeled.index)
-
-
 	# extract column names, class labels
 
 	feature_names = train_labeled.columns.values[1:]
@@ -114,8 +112,19 @@ def insample_learn():
 	feature_values_unlabeled_set = scaler.transform(feature_values_unlabeled_set)
 	feature_values_test_set = scaler.transform(feature_values_test_set)
 
+	##
+	log.info('train-test-split')
+	X_train, X_test, y_train, y_test = train_test_split(
+		feature_values_train_set, 
+		labels_train_set.values.flatten(), 
+		test_size=0.20, 
+		random_state=12357, 
+		stratify=labels_train_set.values.flatten()
+	)
+
 	# convert to TensorFlow datasets
-	train_x, train_y = input_eval_set(feature_names, feature_values_train_set, labels_train_set)
+	train_x, train_y = input_eval_set(feature_names, X_train, y_train)
+	oos_x, oos_y = input_eval_set(feature_names, X_test, y_test)
 	unlabeled_x = input_eval_set(feature_names, feature_values_unlabeled_set) 
 	test_x = input_eval_set(feature_names, feature_values_test_set)
 	
@@ -142,7 +151,7 @@ def insample_learn():
 	print('\nDONE \nClassifying ulabeled data based on the derived model...')
 	
 	prediction_labeled = classifier.predict(
-		input_fn=lambda:eval_input_fn(train_x,
+		input_fn=lambda:eval_input_fn(oos_x,
 										batch_size=batch_size))
 
 	predicted_labeled = list(prediction_labeled)
@@ -151,7 +160,7 @@ def insample_learn():
 	for ii in range(0,len(predicted_labeled)-1):
 		class_id[ii] = predicted_labeled[ii]['class_ids']
 
-	conf = confusion_matrix(train_y, np.int32(np.array(class_id)),labels=np.arange(0,10))
+	conf = confusion_matrix(oos_y, np.int32(np.array(class_id)),labels=np.arange(0,10))
 
 	write_matrix = pd.DataFrame(conf)
 	write_matrix.to_csv(os.path.join(data_folder, 'confusion_matrix'))	
