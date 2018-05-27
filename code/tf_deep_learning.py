@@ -142,7 +142,7 @@ def insample_learn():
 	print('\nDONE \nClassifying ulabeled data based on the derived model...')
 	
 	prediction_labeled = classifier.predict(
-		input_fn=lambda:eval_input_fn(labeled_x,
+		input_fn=lambda:eval_input_fn(train_x,
 										batch_size=batch_size))
 
 	predicted_labeled = list(prediction_labeled)
