@@ -147,9 +147,9 @@ def insample_learn():
 
 	predicted_labeled = list(prediction_labeled)
 
-	class_id = np.zeros(len(predicted_unlabeled),)
-	for ii in range(0,len(predicted_unlabeled)-1):
-		class_id[ii] = predicted_unlabeled[ii]['class_ids']
+	class_id = np.zeros(len(predicted_labeled),)
+	for ii in range(0,len(predicted_labeled)-1):
+		class_id[ii] = predicted_labeled[ii]['class_ids']
 
 	conf = confusion_matrix(train_y, np.int32(np.array(class_id)),labels=np.arange(0,10))
 
