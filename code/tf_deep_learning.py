@@ -206,6 +206,12 @@ def main():
 	feature_values_unlabeled_set = scaler.transform(feature_values_unlabeled_set)
 	feature_values_test_set = scaler.transform(feature_values_test_set)
 
+	exclude = np.array([1,2,3])
+	feature_values_unlabeled_set = feature_values_unlabeled_set[exclude]
+
+	import pdb
+	pdb.set_trace()
+
 	# # perform clustering on unlabeled data
 	# from sklearn.cluster import KMeans
 	# kmeans = KMeans(n_clusters = 10, random_state = 0).fit(train_x_unlabeled)
@@ -262,6 +268,12 @@ def main():
 		class_id[ii] = predicted_unlabeled[ii]['class_ids']
 		
 	print('\nDONE')
+
+	# drop samples classified to 9
+	to_keep = [i for i, label in enumerate(class_id) if label != 9]
+	feature_values_unlabeled_set = feature_values_unlabeled_set[to_keep, :]
+	class_id = class_id[to_keep]
+
 
 	
 	# extended set
@@ -325,6 +337,7 @@ def main():
 
 
 if __name__ == '__main__':
+	print('here')
 	# main()
-	insample_learn()
+	# insample_learn()
 	print('\nDone!')
