@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import data as cd
-
+import data as dt
 
 import tensorflow as tf
 
@@ -13,7 +13,8 @@ import tensorflow as tf
 # sess = tf.Session()
 # print(sess.run(hello))
 
-data_folder = '/Users/dmitrykazakov/Desktop/Studium/MSc/2. Semester/ML/projects/task4_s8n2k3nd/data/ex4/'
+#data_folder = '/Users/dmitrykazakov/Desktop/Studium/MSc/2. Semester/ML/projects/task4_s8n2k3nd/data/ex4/'
+data_folder = os.path.join(dt.data_dir(), dt.DataSets.EX4.value)
 
 def input_eval_set(feature_names, feature_values, class_labels=None):
 	features = dict(zip(feature_names, np.matrix(feature_values).transpose().tolist()))
@@ -71,9 +72,9 @@ def main():
 
 	# import datasets
 
-	train_labeled = pd.read_hdf(data_folder + "train_labeled.h5", "train")
-	train_unlabeled = pd.read_hdf(data_folder + "train_unlabeled.h5", "train")
-	test = pd.read_hdf(data_folder + "test.h5", "test")
+	train_labeled = pd.read_hdf(os.path.join(data_folder, "train_labeled.h5"), "train")
+	train_unlabeled = pd.read_hdf(os.path.join(data_folder, "train_unlabeled.h5"), "train")
+	test = pd.read_hdf(os.path.join(os.path.join(data_folder, "test.h5")), "test")
 
 	# === shuffle data prior to fitting
 	RM = np.random.RandomState(12357)
@@ -212,7 +213,7 @@ def main():
 
 	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
 	yPred.index.name = 'Id'
-	yPred.to_csv(data_folder + 'self-training_v1.csv')
+	yPred.to_csv(os.path.join(data_folder, 'self-training_v1.csv'))
 
 	
 
