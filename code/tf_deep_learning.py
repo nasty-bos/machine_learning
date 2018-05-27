@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import data as cd
 import data as dt
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import mean_squared_error
+import logging 
 
 import tensorflow as tf
 
@@ -12,6 +15,8 @@ import tensorflow as tf
 # hello = tf.constant('Hello tf!')
 # sess = tf.Session()
 # print(sess.run(hello))
+
+log = logging.getLogger(__name__)
 
 #data_folder = '/Users/dmitrykazakov/Desktop/Studium/MSc/2. Semester/ML/projects/task4_s8n2k3nd/data/ex4/'
 data_folder = os.path.join(dt.data_dir(), dt.DataSets.EX4.value)
@@ -65,6 +70,95 @@ def eval_input_fn(features, batch_size):
 
     # Return the dataset.
     return dataset
+
+def insample_learn():
+	# import datasets
+
+	train_labeled = pd.read_hdf(os.path.join(data_folder, "train_labeled.h5"), "train")
+	train_unlabeled = pd.read_hdf(os.path.join(data_folder, "train_unlabeled.h5"), "train")
+	test = pd.read_hdf(os.path.join(os.path.join(data_folder, "test.h5")), "test")
+
+	# === shuffle data prior to fitting
+	RM = np.random.RandomState(12357)
+	train_labeled.index = RM.permutation(train_labeled.index)
+	
+	RM = np.random.RandomState(12357)
+	train_unlabeled.index = RM.permutation(train_unlabeled.index)
+
+
+	# extract column names, class labels
+
+	feature_names = train_labeled.columns.values[1:]
+
+	# labeled train set
+
+	feature_values_train_set = train_labeled.loc[:, feature_names]
+	labels_train_set = train_labeled.loc[:,train_labeled.columns.values[0]]
+
+	# unlabeled train set
+
+	feature_values_unlabeled_set = train_unlabeled.loc[:, feature_names]
+
+
+	# test set
+	
+	feature_values_test_set = test.loc[:, feature_names]
+
+
+	# Now apply the transformations to the data:
+	from sklearn.preprocessing import StandardScaler
+	scaler = StandardScaler()
+
+	scaler.fit(train_labeled.loc[:, feature_names])
+	feature_values_train_set = scaler.transform(feature_values_train_set)
+	feature_values_unlabeled_set = scaler.transform(feature_values_unlabeled_set)
+	feature_values_test_set = scaler.transform(feature_values_test_set)
+
+	# convert to TensorFlow datasets
+	train_x, train_y = input_eval_set(feature_names, feature_values_train_set, labels_train_set)
+	unlabeled_x = input_eval_set(feature_names, feature_values_unlabeled_set) 
+	test_x = input_eval_set(feature_names, feature_values_test_set)
+	
+
+	feature_columns = []
+	for key in train_x:
+		feature_columns.append(tf.feature_column.numeric_column(key=key))
+
+
+	batch_size = 100
+
+
+	classifier = tf.estimator.DNNClassifier(
+		feature_columns=feature_columns,
+		hidden_units=[2048,1024,512],
+		n_classes=10)
+
+	# use self-training: first train on labeled data, then categorize unlabeled data and train again on a combined dataset
+
+	print('\nTraining on labeled data...')
+	classifier.train(
+		input_fn=lambda:train_input_fn(train_x,train_y,batch_size),
+		steps=10000)
+	print('\nDONE \nClassifying ulabeled data based on the derived model...')
+	
+	prediction_labeled = classifier.predict(
+		input_fn=lambda:eval_input_fn(labeled_x,
+										batch_size=batch_size))
+
+	predicted_labeled = list(prediction_labeled)
+
+	class_id = np.zeros(len(predicted_unlabeled),)
+	for ii in range(0,len(predicted_unlabeled)-1):
+		class_id[ii] = predicted_unlabeled[ii]['class_ids']
+
+	conf = confusion_matrix(train_y, np.int32(np.array(class_id)),labels=np.arange(0,10))
+
+	write_matrix = pd.DataFrame(conf)
+	write_matrix.to_csv(os.path.join(data_folder, 'confusion_matrix'))	
+
+	log.debug("MSE: %.5f", mean_squared_error(train_y, np.int32(np.array(class_id))))
+
+
 
 
 
@@ -231,5 +325,6 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	# main()
+	insample_learn()
 	print('\nDone!')
