@@ -35,25 +35,6 @@ def train_input_fn(features, labels, batch_size):
 	return dataset.shuffle(1000).repeat().batch(batch_size)
 
 
-# def eval_input_fn(features, labels, batch_size):
-#     """An input function for evaluation or prediction"""
-#     features=dict(features)
-#     if labels is None:
-#         # No labels, use only features.
-#         inputs = features
-#     else:
-#         inputs = (features, labels)
-
-#     # Convert the inputs to a Dataset.
-#     dataset = tf.data.Dataset.from_tensor_slices(inputs)
-
-#     # Batch the examples
-#     assert batch_size is not None, "batch_size must not be None"
-#     dataset = dataset.batch(batch_size)
-
-#     # Return the dataset.
-#     return dataset
-
 #######################################################################
 def eval_input_fn(features, batch_size):
     
@@ -109,17 +90,17 @@ def in_sample_tester():
 	# === Stratefied sampling of labeled data-set
 	logger.info('train-test-split')
 	sss = StratifiedShuffleSplit(n_splits=10, test_size=0.25, random_state=RM)
-	sss.get_n_splits(X, y)
+	sss.get_n_splits(feature_values_train_set, labels_train_set.values.flatten())
 
 	count=0
-	for train_index, test_index in sss.split(X, y):
+	for train_index, test_index in sss.split(feature_values_train_set, labels_train_set.values.flatten()):
 
 		count+=1
 		logger.info('fold := %i' %count)
 		start = time.time()
 
-		X_train, X_test = X[train_index], X[test_index]
-		y_train, y_test = y[train_index], y[test_index]	
+		X_train, X_test = feature_values_train_set[train_index], feature_values_train_set[test_index]
+		y_train, y_test = labels_train_set.values.flatten()[train_index], labels_train_set.values.flatten()[test_index]	
 		
 		# convert to TensorFlow datasets
 		train_x, train_y = input_eval_set(feature_names, X_train, y_train)
@@ -166,12 +147,18 @@ def in_sample_tester():
 #######################################################################
 if __name__ == "__main__":
 
-	logger = logging.getLogger('myapp')
-	hdlr = logging.FileHandler('/var/tmp/myapp.log')
-	formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-	hdlr.setFormatter(formatter)
-	logger.addHandler(hdlr) 
-	logger.setLevel(logging.WARNING)	
+	import logging
+	import sys
 
+	root = logging.getLogger(__name__)
+	root.setLevel(logging.INFO)
+
+	ch = logging.StreamHandler(sys.stdout)
+	ch.setLevel(logging.DEBUG)
+	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	ch.setFormatter(formatter)
+	root.addHandler(ch)	
+
+	in_sample_tester()
 
 	print('complete!')
