@@ -1,5 +1,4 @@
 import os 
-# import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import data as cd
@@ -163,7 +162,7 @@ def insample_learn():
 	conf = confusion_matrix(oos_y, np.int32(np.array(class_id)),labels=np.arange(0,10))
 
 	write_matrix = pd.DataFrame(conf)
-	write_matrix.to_csv(os.path.join(data_folder, 'confusion_matrix'))	
+	write_matrix.to_csv(os.path.join(data_folder, 'confusion_matrix.csv'))	
 
 	log.debug("MSE: %.5f", mean_squared_error(train_y, np.int32(np.array(class_id))))
 
@@ -214,12 +213,6 @@ def main():
 	feature_values_train_set = scaler.transform(feature_values_train_set)
 	feature_values_unlabeled_set = scaler.transform(feature_values_unlabeled_set)
 	feature_values_test_set = scaler.transform(feature_values_test_set)
-
-	exclude = np.array([1,2,3])
-	feature_values_unlabeled_set = feature_values_unlabeled_set[exclude]
-
-	import pdb
-	pdb.set_trace()
 
 	# # perform clustering on unlabeled data
 	# from sklearn.cluster import KMeans
@@ -328,25 +321,15 @@ def main():
 
 	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
 	yPred.index.name = 'Id'
-	yPred.to_csv(os.path.join(data_folder, 'self-training_v1.csv'))
+	yPred.to_csv(os.path.join(data_folder, 'leave_9_out_estimator.csv'))
 
 	
-
-
-
-	# print(labels_train_set[10])
-
-
 
 	return
 
 
-
-
-
-
 if __name__ == '__main__':
 	print('here')
-	# main()
+	main()
 	# insample_learn()
 	print('\nDone!')
