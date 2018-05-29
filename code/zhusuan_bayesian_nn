@@ -9,8 +9,8 @@ import pandas as pd
 import data as cd
 import data as dt
 
-sys.path.insert(0, dt.example_dir() + "/examples")
-sys.path.insert(0, dt.example_dir() + "/examples/utils")
+# sys.path.insert(0, dt.example_dir() + "/examples")
+# sys.path.insert(0, dt.example_dir() + "/examples/utils")
 
 import tensorflow as tf
 from six.moves import range, zip
