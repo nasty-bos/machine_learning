@@ -115,7 +115,7 @@ def main():
     y_train, y_test, mean_y_train, std_y_train = dataset.standardize(
         y_train, y_test)
 
-    print(y_train[1])
+    print(y_train[1:100])
 
     
     pdb.set_trace()
