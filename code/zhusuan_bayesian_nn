@@ -157,7 +157,8 @@ def main():
 
     # Define training/evaluation parameters
     lb_samples = 10
-    ll_samples = 5000
+    # ll_samples = 5000
+    ll_samples = 200
     epochs = 500
     batch_size = 100
     iters = int(np.floor(x_train.shape[0] / float(batch_size)))
