@@ -193,9 +193,9 @@ def main():
                       .format(test_lb, test_rmse, test_ll))
         # make prediction
         y_submit_test = sess.run(y_pred, feed_dict={n_particles: lb_samples, x: x_submit_test})
-
+        y_submit_test = [i * std_y_train + mean_y_train for i in y_submit_test]
         print(y_submit_test.shape)
-        print(np.mean(y_submit_test))
+        print(y_submit_test[0:100])
         
         pdb.set_trace()
 
