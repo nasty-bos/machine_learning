@@ -192,7 +192,7 @@ def main():
         # make prediction
         y_submit_test = sess.run(y_pred, feed_dict={n_particles: lb_samples, x: x_submit_test})
         import pdb
-        pdb.set_trace
+        pdb.set_trace()
 
 
 if __name__ == "__main__":
