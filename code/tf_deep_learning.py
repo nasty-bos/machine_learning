@@ -6,6 +6,7 @@ import data as dt
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
 
 import logging 
 
@@ -71,6 +72,55 @@ def eval_input_fn(features, batch_size):
 
     # Return the dataset.
     return dataset
+
+
+
+def naive_bayes_class():
+
+	train_labeled = pd.read_hdf(os.path.join(data_folder, "train_labeled.h5"), "train")
+	train_unlabeled = pd.read_hdf(os.path.join(data_folder, "train_unlabeled.h5"), "train")
+	test = pd.read_hdf(os.path.join(os.path.join(data_folder, "test.h5")), "test")
+
+	# === shuffle data prior to fitting
+	RM = np.random.RandomState(12357)
+	train_labeled.index = RM.permutation(train_labeled.index)
+	
+	# extract column names, class labels
+
+	feature_names = train_labeled.columns.values[1:]
+
+	# labeled train set
+
+	feature_values_train_set = train_labeled.loc[:, feature_names]
+	labels_train_set = train_labeled.loc[:,train_labeled.columns.values[0]]
+
+	# unlabeled train set
+
+	feature_values_unlabeled_set = train_unlabeled.loc[:, feature_names]
+
+
+	# test set
+	
+	feature_values_test_set = test.loc[:, feature_names]
+
+
+	# Now apply the transformations to the data:
+	from sklearn.preprocessing import StandardScaler
+	scaler = StandardScaler()
+
+	scaler.fit(train_labeled.loc[:, feature_names])
+	feature_values_train_set = scaler.transform(feature_values_train_set)
+	feature_values_unlabeled_set = scaler.transform(feature_values_unlabeled_set)
+	feature_values_test_set = scaler.transform(feature_values_test_set)
+
+	gnb = GaussianNB()
+
+	class_id = gnb.fit(feature_values_train_set, labels_train_set).predict(feature_values_test_set)
+
+	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
+	yPred.index.name = 'Id'
+	yPred.to_csv(os.path.join(data_folder, 'NB.csv'))
+
 
 def insample_learn():
 	# import datasets
@@ -330,6 +380,7 @@ def main():
 
 if __name__ == '__main__':
 	print('here')
-	main()
+	naive_bayes_class()
+	# main()
 	# insample_learn()
 	print('\nDone!')
