@@ -101,7 +101,7 @@ def main():
     y_train = np.array(train_labeled.loc[0:9000,train_labeled.columns.values[0]], dtype=np.float32)
 
     x_test = np.array(train_labeled.loc[8800:9000, feature_names], dtype=np.float32)
-    y_test = np.array(train_labeled.loc[8800:9000,train_labeled.columns.values[0]], dtype=tnp.float32)
+    y_test = np.array(train_labeled.loc[8800:9000,train_labeled.columns.values[0]], dtype=np.float32)
 
     # x_test = np.array(test.loc[:, feature_names])
     
