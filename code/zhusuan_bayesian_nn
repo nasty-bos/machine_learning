@@ -4,12 +4,13 @@ from __future__ import division
 import os
 import sys
 
-sys.path.insert(0, "/Users/dmitrykazakov/Desktop/Studium/MSc/2. Semester/ML/projects/task4_s8n2k3nd/zhusuan/examples")
-sys.path.insert(0, "/Users/dmitrykazakov/Desktop/Studium/MSc/2. Semester/ML/projects/task4_s8n2k3nd/zhusuan/examples/utils")
 
 import pandas as pd
 import data as cd
 import data as dt
+
+sys.path.insert(0, dt.example_dir() + "/examples")
+sys.path.insert(0, dt.example_dir() + "/examples/utils")
 
 import tensorflow as tf
 from six.moves import range, zip
