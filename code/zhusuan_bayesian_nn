@@ -91,17 +91,17 @@ def main():
 
     feature_names = train_labeled.columns.values[1:]
 
-    x_train = np.array(train_labeled.loc[:, feature_names], dtype=np.float32)
-    x_submit_test = np.array(test.loc[:, feature_names], dtype=np.float32)
+    x_train = np.array(train_labeled.loc[:, feature_names], dtype=tf.float32)
+    x_submit_test = np.array(test.loc[:, feature_names], dtype=tf.float32)
 
     # import pdb
     # pdb.set_trace()
 
-    x_train = np.array(train_labeled.loc[0:9000, feature_names], dtype=np.float32)
-    y_train = np.array(train_labeled.loc[0:9000,train_labeled.columns.values[0]], dtype=np.float32)
+    x_train = np.array(train_labeled.loc[0:9000, feature_names], dtype=tf.float32)
+    y_train = np.array(train_labeled.loc[0:9000,train_labeled.columns.values[0]], dtype=tf.float32)
 
     x_test = np.array(train_labeled.loc[8800:9000, feature_names], dtype=np.float32)
-    y_test = np.array(train_labeled.loc[8800:9000,train_labeled.columns.values[0]], dtype=np.float32)
+    y_test = np.array(train_labeled.loc[8800:9000,train_labeled.columns.values[0]], dtype=tf.float32)
 
     # x_test = np.array(test.loc[:, feature_names])
     
@@ -111,6 +111,7 @@ def main():
 
     # Standardize data
     x_train, x_test, _, _ = dataset.standardize(x_train, x_test)
+    x_submit_test, _, _, _  = dataset.standardize(x_submit_test, x_train)
     y_train, y_test, mean_y_train, std_y_train = dataset.standardize(
         y_train, y_test)
 
