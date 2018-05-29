@@ -161,7 +161,7 @@ def main():
     lb_samples = 10
     # ll_samples = 5000
     ll_samples = 200
-    epochs = 10
+    epochs = 2
     batch_size = 100
     iters = int(np.floor(x_train.shape[0] / float(batch_size)))
     test_freq = 10
@@ -190,7 +190,7 @@ def main():
                 print('>> Test lower bound = {}, rmse = {}, log_likelihood = {}'
                       .format(test_lb, test_rmse, test_ll))
         # make prediction
-        y_submit_test = sess.run(y_pred, feed_dict={x: x_submit_test})
+        y_submit_test = sess.run(y_pred, feed_dict={n_particles: lb_samples, x: x_submit_test})
         import pdb
         pdb.set_trace
 
