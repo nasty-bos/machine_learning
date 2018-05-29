@@ -96,11 +96,11 @@ def main():
     # import pdb
     # pdb.set_trace()
 
-    x_train = np.array(train_labeled.loc[0:7799, feature_names], dtype=np.float32)
-    y_train = np.array(train_labeled.loc[0:7799,train_labeled.columns.values[0]], dtype=np.float32)
+    x_train = np.array(train_labeled.loc[0:8799, feature_names], dtype=np.float32)
+    y_train = np.array(train_labeled.loc[0:8799,train_labeled.columns.values[0]], dtype=np.float32)
 
-    x_test = np.array(train_labeled.loc[7800:9000, feature_names], dtype=np.float32)
-    y_test = np.array(train_labeled.loc[7800:9000,train_labeled.columns.values[0]], dtype=np.float32)
+    x_test = np.array(train_labeled.loc[8800:9000, feature_names], dtype=np.float32)
+    y_test = np.array(train_labeled.loc[8800:9000,train_labeled.columns.values[0]], dtype=np.float32)
 
     # x_test = np.array(test.loc[:, feature_names])
     
