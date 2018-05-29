@@ -3,7 +3,7 @@ from __future__ import print_function
 from __future__ import division
 import os
 import sys
-
+import pdb
 
 import pandas as pd
 import data as cd
@@ -115,8 +115,10 @@ def main():
     y_train, y_test, mean_y_train, std_y_train = dataset.standardize(
         y_train, y_test)
 
-    # import pdb
-    # pdb.set_trace()
+    print(y_train[1])
+
+    
+    pdb.set_trace()
 
 
 
@@ -192,7 +194,7 @@ def main():
         # make prediction
         y_submit_test = sess.run(y, feed_dict={n_particles: lb_samples, x: x_submit_test})
         print(y_submit_test.shape)
-        import pdb
+        
         pdb.set_trace()
 
 
