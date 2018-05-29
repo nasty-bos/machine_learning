@@ -92,12 +92,13 @@ def main():
     feature_names = train_labeled.columns.values[1:]
 
     x_train = np.array(train_labeled.loc[:, feature_names], dtype=np.float32)
+    x_submit_test = np.array(test.loc[:, feature_names], dtype=np.float32)
 
     # import pdb
     # pdb.set_trace()
 
-    x_train = np.array(train_labeled.loc[0:8799, feature_names], dtype=np.float32)
-    y_train = np.array(train_labeled.loc[0:8799,train_labeled.columns.values[0]], dtype=np.float32)
+    x_train = np.array(train_labeled.loc[0:9000, feature_names], dtype=np.float32)
+    y_train = np.array(train_labeled.loc[0:9000,train_labeled.columns.values[0]], dtype=np.float32)
 
     x_test = np.array(train_labeled.loc[8800:9000, feature_names], dtype=np.float32)
     y_test = np.array(train_labeled.loc[8800:9000,train_labeled.columns.values[0]], dtype=np.float32)
@@ -159,7 +160,7 @@ def main():
     lb_samples = 10
     # ll_samples = 5000
     ll_samples = 200
-    epochs = 500
+    epochs = 10
     batch_size = 100
     iters = int(np.floor(x_train.shape[0] / float(batch_size)))
     test_freq = 10
@@ -187,6 +188,10 @@ def main():
                 print('>> TEST')
                 print('>> Test lower bound = {}, rmse = {}, log_likelihood = {}'
                       .format(test_lb, test_rmse, test_ll))
+        # make prediction
+        y_submit_test = sess.run(y, feed_dict={x: x_submit_test})
+        import pdb
+        pdb.set_trace
 
 
 if __name__ == "__main__":
