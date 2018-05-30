@@ -105,6 +105,8 @@ def in_sample_tester():
 		# convert to TensorFlow datasets
 		train_x, train_y = input_eval_set(feature_names, X_train, y_train)
 		oos_x, oos_y = input_eval_set(feature_names, X_test, y_test)
+		unlabeled_x = input_eval_set(feature_names, feature_values_unlabeled_set) 
+
 
 		feature_columns = []
 		for key in train_x:
@@ -142,6 +144,23 @@ def in_sample_tester():
 		write_matrix.to_csv(os.path.join(data_folder, 'confusion_matrix_%i.csv') %count)	
 
 		logger.info("MSE: %.5f" %(mean_squared_error(oos_y, np.int32(np.array(class_id)))))
+
+		logger.info("Using model %i to predict unlabled data" %count)
+		prediction_unlabeled = classifier.predict(
+			input_fn=lambda:eval_input_fn(unlabeled_x, batch_size=batch_size))
+
+		predicted_unlabeled = list(prediction_unlabeled) 
+
+		class_id = np.zeros(len(predicted_unlabeled),)
+
+		for ii in range(0, len(predicted_unlabeled) - 1):
+			class_id[ii] = predicted_unlabeled[ii]['class_ids']
+
+		write_predictions = pandas.Series(class_id, name="model_%i_label_prediction" %count)
+		write_predictions.to_csv(os.path.join(data_folder, 'prediction_vector_%i.csv' %count))
+			
+		print('\nDONE')
+
 
 
 #######################################################################
