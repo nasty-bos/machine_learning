@@ -156,7 +156,7 @@ def in_sample_tester():
 		for ii in range(0, len(predicted_unlabeled) - 1):
 			class_id[ii] = predicted_unlabeled[ii]['class_ids']
 
-		write_predictions = pandas.Series(class_id, name="model_%i_label_prediction" %count)
+		write_predictions = pd.Series(class_id, name="model_%i_label_prediction" %count)
 		write_predictions.to_csv(os.path.join(data_folder, 'prediction_vector_%i.csv' %count))
 			
 		print('\nDONE')
