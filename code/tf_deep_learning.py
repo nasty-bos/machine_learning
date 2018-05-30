@@ -284,6 +284,7 @@ def main():
 
 	# convert to TensorFlow datasets
 	train_x, train_y = input_eval_set(feature_names, feature_values_train_set, labels_train_set)
+	
 	unlabeled_x = input_eval_set(feature_names, feature_values_unlabeled_set) 
 	test_x = input_eval_set(feature_names, feature_values_test_set)
 	
@@ -293,7 +294,7 @@ def main():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 300
+	batch_size = 50
 
 
 	classifier = tf.estimator.DNNClassifier(
@@ -303,61 +304,61 @@ def main():
 
 	# use self-training: first train on labeled data, then categorize unlabeled data and train again on a combined dataset
 
-	print('\nTraining on labeled data...')
-	classifier.train(
-		input_fn=lambda:train_input_fn(train_x,train_y,batch_size),
-		steps=10000)
-	print('\nDONE \nClassifying ulabeled data based on the derived model...')
+	# print('\nTraining on labeled data...')
+	# classifier.train(
+	# 	input_fn=lambda:train_input_fn(train_x,train_y,batch_size),
+	# 	steps=10000)
+	# print('\nDONE \nClassifying ulabeled data based on the derived model...')
 	
-	prediction_unlabeled = classifier.predict(
-		input_fn=lambda:eval_input_fn(unlabeled_x,
-										batch_size=batch_size))
+	# prediction_unlabeled = classifier.predict(
+	# 	input_fn=lambda:eval_input_fn(unlabeled_x,
+	# 									batch_size=batch_size))
 
-	predicted_unlabeled = list(prediction_unlabeled) 
+	# predicted_unlabeled = list(prediction_unlabeled) 
 
-	class_id = np.zeros(len(predicted_unlabeled),)
-	for ii in range(0,len(predicted_unlabeled)-1):
-		class_id[ii] = predicted_unlabeled[ii]['class_ids']
+	# class_id = np.zeros(len(predicted_unlabeled),)
+	# for ii in range(0,len(predicted_unlabeled)-1):
+	# 	class_id[ii] = predicted_unlabeled[ii]['class_ids']
 		
-	print('\nDONE')
+	# print('\nDONE')
 
-	# drop samples classified to 9
-	to_keep = [i for i, label in enumerate(class_id) if label != 9]
-	feature_values_unlabeled_set = feature_values_unlabeled_set[to_keep, :]
-	class_id = class_id[to_keep]
+	# # drop samples classified to 9
+	# to_keep = [i for i, label in enumerate(class_id) if label != 9]
+	# feature_values_unlabeled_set = feature_values_unlabeled_set[to_keep, :]
+	# class_id = class_id[to_keep]
 
 
 	
 	# extended set
 
-	feature_values_extended_train = np.concatenate((feature_values_train_set, feature_values_unlabeled_set), axis=0)
-	labels_extended_train = np.concatenate((labels_train_set, class_id), axis=0)
+	# feature_values_extended_train = np.concatenate((feature_values_train_set, feature_values_unlabeled_set), axis=0)
+	# labels_extended_train = np.concatenate((labels_train_set, class_id), axis=0)
 
-	# convert again to Tensorflow dataset
-	extended_train_x, extended_train_y = input_eval_set(feature_names, feature_values_extended_train, labels_extended_train)
+	# # convert again to Tensorflow dataset
+	# extended_train_x, extended_train_y = input_eval_set(feature_names, feature_values_extended_train, labels_extended_train)
 
-	# train on extended dataset
-	print('\nTraining on extended dataset...')
-	extended_classifier = tf.estimator.DNNClassifier(
-		feature_columns=feature_columns,
-		hidden_units=[2048,1024,512],
-		n_classes=10)
+	# # train on extended dataset
+	# print('\nTraining on extended dataset...')
+	# extended_classifier = tf.estimator.DNNClassifier(
+	# 	feature_columns=feature_columns,
+	# 	hidden_units=[2048,1024,512],
+	# 	n_classes=10)
 
-	extended_classifier.train(
-		input_fn=lambda:train_input_fn(extended_train_x,extended_train_y,batch_size),
-		steps=10000)
-	print('\nDONE')
+	# extended_classifier.train(
+	# 	input_fn=lambda:train_input_fn(extended_train_x,extended_train_y,batch_size),
+	# 	steps=10000)
+	# print('\nDONE')
 
-
-	# now predict on test data
-	# prediction = classifier.predict(
-	# 	input_fn=lambda:eval_input_fn(test_x,
-	# 									batch_size=batch_size)) 
 
 	# now predict on test data
-	prediction = extended_classifier.predict(
+	prediction = classifier.predict(
 		input_fn=lambda:eval_input_fn(test_x,
-										batch_size=batch_size))
+										batch_size=batch_size)) 
+
+	# now predict on test data
+	# prediction = extended_classifier.predict(
+		# input_fn=lambda:eval_input_fn(test_x,
+		# 								batch_size=batch_size))
 
 
 	predicted = list(prediction)
