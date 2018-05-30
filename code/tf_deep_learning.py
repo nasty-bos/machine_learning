@@ -294,12 +294,12 @@ def main():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 200
+	batch_size = 100
 
 
 	classifier = tf.estimator.DNNClassifier(
 		feature_columns=feature_columns,
-		hidden_units=[2048,1024,512],
+		hidden_units=[256,128,64],
 		n_classes=10)
 
 	# use self-training: first train on labeled data, then categorize unlabeled data and train again on a combined dataset
