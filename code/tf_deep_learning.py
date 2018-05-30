@@ -183,7 +183,7 @@ def insample_learn():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 100
+	batch_size = 300
 
 
 	classifier = tf.estimator.DNNClassifier(
