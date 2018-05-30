@@ -294,7 +294,7 @@ def main():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 50
+	batch_size = 200
 
 
 	classifier = tf.estimator.DNNClassifier(
