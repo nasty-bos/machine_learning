@@ -6,6 +6,7 @@ import data as dt
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
 
 import logging 
 
@@ -72,6 +73,55 @@ def eval_input_fn(features, batch_size):
     # Return the dataset.
     return dataset
 
+
+
+def naive_bayes_class():
+
+	train_labeled = pd.read_hdf(os.path.join(data_folder, "train_labeled.h5"), "train")
+	train_unlabeled = pd.read_hdf(os.path.join(data_folder, "train_unlabeled.h5"), "train")
+	test = pd.read_hdf(os.path.join(os.path.join(data_folder, "test.h5")), "test")
+
+	# === shuffle data prior to fitting
+	RM = np.random.RandomState(12357)
+	train_labeled.index = RM.permutation(train_labeled.index)
+	
+	# extract column names, class labels
+
+	feature_names = train_labeled.columns.values[1:]
+
+	# labeled train set
+
+	feature_values_train_set = train_labeled.loc[:, feature_names]
+	labels_train_set = train_labeled.loc[:,train_labeled.columns.values[0]]
+
+	# unlabeled train set
+
+	feature_values_unlabeled_set = train_unlabeled.loc[:, feature_names]
+
+
+	# test set
+	
+	feature_values_test_set = test.loc[:, feature_names]
+
+
+	# Now apply the transformations to the data:
+	from sklearn.preprocessing import StandardScaler
+	scaler = StandardScaler()
+
+	scaler.fit(train_labeled.loc[:, feature_names])
+	feature_values_train_set = scaler.transform(feature_values_train_set)
+	feature_values_unlabeled_set = scaler.transform(feature_values_unlabeled_set)
+	feature_values_test_set = scaler.transform(feature_values_test_set)
+
+	gnb = GaussianNB()
+
+	class_id = gnb.fit(feature_values_train_set, labels_train_set).predict(feature_values_test_set)
+
+	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
+	yPred.index.name = 'Id'
+	yPred.to_csv(os.path.join(data_folder, 'NB.csv'))
+
+
 def insample_learn():
 	# import datasets
 
@@ -133,7 +183,7 @@ def insample_learn():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 100
+	batch_size = 200
 
 
 	classifier = tf.estimator.DNNClassifier(
@@ -234,6 +284,7 @@ def main():
 
 	# convert to TensorFlow datasets
 	train_x, train_y = input_eval_set(feature_names, feature_values_train_set, labels_train_set)
+	
 	unlabeled_x = input_eval_set(feature_names, feature_values_unlabeled_set) 
 	test_x = input_eval_set(feature_names, feature_values_test_set)
 	
@@ -248,7 +299,7 @@ def main():
 
 	classifier = tf.estimator.DNNClassifier(
 		feature_columns=feature_columns,
-		hidden_units=[2048,1024,512],
+		hidden_units=[256,128,64],
 		n_classes=10)
 
 	# use self-training: first train on labeled data, then categorize unlabeled data and train again on a combined dataset
@@ -259,55 +310,55 @@ def main():
 		steps=10000)
 	print('\nDONE \nClassifying ulabeled data based on the derived model...')
 	
-	prediction_unlabeled = classifier.predict(
-		input_fn=lambda:eval_input_fn(unlabeled_x,
-										batch_size=batch_size))
+	# prediction_unlabeled = classifier.predict(
+	# 	input_fn=lambda:eval_input_fn(unlabeled_x,
+	# 									batch_size=batch_size))
 
-	predicted_unlabeled = list(prediction_unlabeled) 
+	# predicted_unlabeled = list(prediction_unlabeled) 
 
-	class_id = np.zeros(len(predicted_unlabeled),)
-	for ii in range(0,len(predicted_unlabeled)-1):
-		class_id[ii] = predicted_unlabeled[ii]['class_ids']
+	# class_id = np.zeros(len(predicted_unlabeled),)
+	# for ii in range(0,len(predicted_unlabeled)-1):
+	# 	class_id[ii] = predicted_unlabeled[ii]['class_ids']
 		
-	print('\nDONE')
+	# print('\nDONE')
 
-	# drop samples classified to 9
-	to_keep = [i for i, label in enumerate(class_id) if label != 9]
-	feature_values_unlabeled_set = feature_values_unlabeled_set[to_keep, :]
-	class_id = class_id[to_keep]
+	# # drop samples classified to 9
+	# to_keep = [i for i, label in enumerate(class_id) if label != 9]
+	# feature_values_unlabeled_set = feature_values_unlabeled_set[to_keep, :]
+	# class_id = class_id[to_keep]
 
 
 	
 	# extended set
 
-	feature_values_extended_train = np.concatenate((feature_values_train_set, feature_values_unlabeled_set), axis=0)
-	labels_extended_train = np.concatenate((labels_train_set, class_id), axis=0)
+	# feature_values_extended_train = np.concatenate((feature_values_train_set, feature_values_unlabeled_set), axis=0)
+	# labels_extended_train = np.concatenate((labels_train_set, class_id), axis=0)
 
-	# convert again to Tensorflow dataset
-	extended_train_x, extended_train_y = input_eval_set(feature_names, feature_values_extended_train, labels_extended_train)
+	# # convert again to Tensorflow dataset
+	# extended_train_x, extended_train_y = input_eval_set(feature_names, feature_values_extended_train, labels_extended_train)
 
-	# train on extended dataset
-	print('\nTraining on extended dataset...')
-	extended_classifier = tf.estimator.DNNClassifier(
-		feature_columns=feature_columns,
-		hidden_units=[2048,1024,512],
-		n_classes=10)
+	# # train on extended dataset
+	# print('\nTraining on extended dataset...')
+	# extended_classifier = tf.estimator.DNNClassifier(
+	# 	feature_columns=feature_columns,
+	# 	hidden_units=[2048,1024,512],
+	# 	n_classes=10)
 
-	extended_classifier.train(
-		input_fn=lambda:train_input_fn(extended_train_x,extended_train_y,batch_size),
-		steps=10000)
-	print('\nDONE')
+	# extended_classifier.train(
+	# 	input_fn=lambda:train_input_fn(extended_train_x,extended_train_y,batch_size),
+	# 	steps=10000)
+	# print('\nDONE')
 
-
-	# now predict on test data
-	# prediction = classifier.predict(
-	# 	input_fn=lambda:eval_input_fn(test_x,
-	# 									batch_size=batch_size)) 
 
 	# now predict on test data
-	prediction = extended_classifier.predict(
+	prediction = classifier.predict(
 		input_fn=lambda:eval_input_fn(test_x,
-										batch_size=batch_size))
+										batch_size=batch_size)) 
+
+	# now predict on test data
+	# prediction = extended_classifier.predict(
+		# input_fn=lambda:eval_input_fn(test_x,
+		# 								batch_size=batch_size))
 
 
 	predicted = list(prediction)
@@ -321,7 +372,7 @@ def main():
 
 	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
 	yPred.index.name = 'Id'
-	yPred.to_csv(os.path.join(data_folder, 'leave_9_out_estimator.csv'))
+	yPred.to_csv(os.path.join(data_folder, 'v1_1.csv'))
 
 	
 
@@ -329,7 +380,7 @@ def main():
 
 
 if __name__ == '__main__':
-	print('here')
+	# naive_bayes_class()
 	main()
 	# insample_learn()
 	print('\nDone!')

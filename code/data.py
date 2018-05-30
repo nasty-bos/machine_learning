@@ -4,6 +4,7 @@ import os
 from enum import Enum
 
 DATA_DIR = os.path.join('..','data')
+EXAMPLE_DIR = os.path.join('..','zhusuan')
 
 #######################################################################
 class DataSets(Enum):
@@ -17,3 +18,5 @@ class DataSets(Enum):
 #######################################################################
 def data_dir():
     return DATA_DIR
+def example_dir():
+	return EXAMPLE_DIR
