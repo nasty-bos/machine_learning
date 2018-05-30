@@ -372,7 +372,7 @@ def main():
 
 	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
 	yPred.index.name = 'Id'
-	yPred.to_csv(os.path.join(data_folder, 'Batch_size_200.csv'))
+	yPred.to_csv(os.path.join(data_folder, 'v1_1.csv'))
 
 	
 
