@@ -293,7 +293,7 @@ def main():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 100
+	batch_size = 300
 
 
 	classifier = tf.estimator.DNNClassifier(
@@ -371,7 +371,7 @@ def main():
 
 	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
 	yPred.index.name = 'Id'
-	yPred.to_csv(os.path.join(data_folder, 'leave_9_out_estimator.csv'))
+	yPred.to_csv(os.path.join(data_folder, 'Batch_size_300.csv'))
 
 	
 
@@ -379,8 +379,7 @@ def main():
 
 
 if __name__ == '__main__':
-	print('here')
-	naive_bayes_class()
-	# main()
+	# naive_bayes_class()
+	main()
 	# insample_learn()
 	print('\nDone!')
