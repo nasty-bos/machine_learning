@@ -183,7 +183,7 @@ def insample_learn():
 		feature_columns.append(tf.feature_column.numeric_column(key=key))
 
 
-	batch_size = 300
+	batch_size = 10
 
 
 	classifier = tf.estimator.DNNClassifier(
@@ -371,7 +371,7 @@ def main():
 
 	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
 	yPred.index.name = 'Id'
-	yPred.to_csv(os.path.join(data_folder, 'Batch_size_300.csv'))
+	yPred.to_csv(os.path.join(data_folder, 'Batch_size_10.csv'))
 
 	
 
