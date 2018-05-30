@@ -304,11 +304,11 @@ def main():
 
 	# use self-training: first train on labeled data, then categorize unlabeled data and train again on a combined dataset
 
-	# print('\nTraining on labeled data...')
-	# classifier.train(
-	# 	input_fn=lambda:train_input_fn(train_x,train_y,batch_size),
-	# 	steps=10000)
-	# print('\nDONE \nClassifying ulabeled data based on the derived model...')
+	print('\nTraining on labeled data...')
+	classifier.train(
+		input_fn=lambda:train_input_fn(train_x,train_y,batch_size),
+		steps=10000)
+	print('\nDONE \nClassifying ulabeled data based on the derived model...')
 	
 	# prediction_unlabeled = classifier.predict(
 	# 	input_fn=lambda:eval_input_fn(unlabeled_x,
