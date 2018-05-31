@@ -12,6 +12,8 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split
+from itertools import compress
+from scipy import stats
 
 
 #######################################################################
@@ -47,6 +49,48 @@ def eval_input_fn(features, batch_size):
 
     # Return the dataset.
     return dataset
+
+
+#######################################################################
+def label_data():
+
+	logger = logging.getLogger(__name__)
+
+	## 
+	logger.info('import datasets')
+	data_folder = os.path.join(dt.data_dir(), dt.DataSets.EX4.value)
+	train_labeled = pd.read_hdf(os.path.join(data_folder, "train_labeled.h5"), "train")
+	train_unlabeled = pd.read_hdf(os.path.join(data_folder, "train_unlabeled.h5"), "train")
+
+
+	## 
+	logger.info('import p(y|x) model predictions')
+	files = os.listdir(data_folder)
+	wanted = [True if file.startswith('prediction_vector_') else False for file in files]
+	fetch = list(compress(files, wanted))
+
+	container = []
+	result = [container.append(pd.read_csv(os.path.join(data_folder, file), header=None, index_col=0).values) for file in fetch]
+	predicted_labels = np.hstack(container)
+	predicted_mode, count = stats.mode(predicted_labels, axis=1)
+	decision_vector = pd.DataFrame(np.hstack((predicted_mode, count)))
+	decision_vector.columns = ['class', 'count']
+	mask = decision_vector['count'] < 10
+	idx = mask[~mask].index
+
+	##
+	logger.info('label remaining data')
+
+	train_unlabeled_labeled = train_unlabeled.loc[idx+9000, :] 
+	train_unlabeled_labeled.loc[:, 'y'] = decision_vector.loc[idx, 'class'].values
+
+	# === shuffle data prior to fitting
+	RM = np.random.RandomState(12357)
+	train_labeled.index = RM.permutation(train_labeled.index)
+
+	full_train_data = pd.concat([train_labeled, train_unlabeled_labeled], axis=0)
+
+	return full_train_data
 
 
 
@@ -163,6 +207,88 @@ def in_sample_tester():
 
 
 
+
+#######################################################################
+def out_of_sample_tester():
+
+	# import datasets
+	data_folder = os.path.join(dt.data_dir(), dt.DataSets.EX4.value)
+
+	train_labeled = label_data()
+	train_unlabeled = pd.read_hdf(os.path.join(data_folder, "train_unlabeled.h5"), "train")
+	test = pd.read_hdf(os.path.join(os.path.join(data_folder, "test.h5")), "test")
+
+	# === shuffle data prior to fitting
+	RM = np.random.RandomState(12357)
+	train_labeled.index = RM.permutation(train_labeled.index)	
+	train_unlabeled.index = RM.permutation(train_unlabeled.index)
+
+
+	# extract column names, class labels
+	feature_names = ['x%i' %i for i in np.arange(1, 128 + 1, 1)]
+	target = ['y']
+
+	# labeled train set
+	feature_values_train_set = train_labeled.loc[:, feature_names]
+	labels_train_set = train_labeled.loc[:, target]
+
+	# test set
+	feature_values_test_set = test.loc[:, feature_names]
+
+	# Now apply the transformations to the data:
+	from sklearn.preprocessing import StandardScaler
+	scaler = StandardScaler()
+
+	scaler.fit(train_labeled.loc[:, feature_names])
+	feature_values_train_set = scaler.transform(feature_values_train_set)
+	feature_values_test_set = scaler.transform(feature_values_test_set)
+
+	# convert to TensorFlow datasets
+	train_x, train_y = input_eval_set(feature_names, feature_values_train_set, labels_train_set)
+	test_x = input_eval_set(feature_names, feature_values_test_set)
+	
+	feature_columns = []
+	for key in train_x:
+		feature_columns.append(tf.feature_column.numeric_column(key=key))
+
+	batch_size = 100
+
+	classifier = tf.estimator.DNNClassifier(
+		feature_columns=feature_columns,
+		hidden_units=[2048, 1024, 512],
+		n_classes=10)
+
+
+	print('\nTraining on labeled data...')
+
+	classifier.train(
+		input_fn=lambda:train_input_fn(train_x, train_y, batch_size),
+		steps=10000)
+
+	print('\nDONE \nClassifying ulabeled data based on the derived model...')
+	
+
+	# now predict on test data
+	prediction = classifier.predict(
+		input_fn=lambda:eval_input_fn(test_x, batch_size=batch_size)) 
+
+
+	predicted = list(prediction)
+
+	print("\n predicted a total of %i points" %len(predicted))
+
+	class_id = np.zeros(len(predicted),)
+	for ii in range(0,len(predicted)-1):
+		class_id[ii] = predicted[ii]['class_ids']
+
+	yPred = pd.DataFrame(class_id, index=test.index, columns=['y'])
+	yPred.index.name = 'Id'
+	yPred.to_csv(os.path.join(data_folder, 'results_with_probabalistic_labeling.csv'))	
+
+	return True
+
+
+
 #######################################################################
 if __name__ == "__main__":
 
@@ -178,6 +304,9 @@ if __name__ == "__main__":
 	ch.setFormatter(formatter)
 	root.addHandler(ch)	
 
-	in_sample_tester()
+	# in_sample_tester()
+	# label_data()
+	indicator = out_of_sample_tester()
 
-	print('complete!')
+	if indicator:
+		print('complete!')
